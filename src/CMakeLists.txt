@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(arguments CXX)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -std=c++0x -g")
