@@ -38,46 +38,34 @@ bool Arguments::evaluate(int argc, char* argv[])
   // parse program arguments
   vector<string> args(argv + 1, argv + argc);
 
-  int last_index = 1;
   bool is_valid = true;
   errors_.clear();
 
   for (auto i = options_.begin(); i != options_.end(); ++i) { // configured options
-    auto option = *i->second;
+    auto option = i->second;
     bool found = false;
 
     for (auto j = args.begin(); j != args.end(); ++j) { // given arguments
       string arg_name  = *j;
 
       stringstream aux;
-      aux << "-" << option.shortName();
+      aux << "-" << option->shortName();
 
       string opt_short = aux.str();
-      string opt_long  = "--" + option.longName();
+      string opt_long  = "--" + option->longName();
 
-      if (option.hasShortName() && (arg_name == opt_short || arg_name == opt_long)) {
-        if (!option.isFlag()) {
-          option.value(*++j);
-          last_index += 2;
+      if ((option->hasShortName() && arg_name == opt_short) || (arg_name == opt_long)) {
+        if (!option->isFlag()) {
+          option->value(*++j);
         }
-        else {
-          ++last_index;
-        }
-      }
-      else if (!option.hasShortName() && arg_name == opt_long) {
-        if (!option.isFlag()) {
-          option.value(*++j);
-          last_index += 2;
-        }
-        else {
-          ++last_index;
-        }
+
+        found = true;
       }
     }
 
-    if (!found && option.required()) {
+    if (!found && option->required()) {
       stringstream ss;
-      ss << "Option \"" << option.longName() << "\" is required!" << endl;
+      ss << "Option \"" << option->longName() << "\" is required!" << endl;
       errors_ = ss.str();
 
       is_valid = false;
