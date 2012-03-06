@@ -11,15 +11,25 @@ Arguments::Arguments()
 
 Arguments::~Arguments()
 {
+  if (options_.empty()) {
+    return;
+  }
+
+  for (auto i = options_.begin(); i != options_.end(); ++i) {
+    auto option = i->second;
+    delete option;
+  }
+
+  options_.clear();
 }
 
 
-Arguments& Arguments::add(Option& option)
+Option& Arguments::add(const string& long_name, const char short_name)
 {
-  option_item_t item(option.longName(), shared_ptr<Option>(&option));
-  options_.insert(item);
+  Option* option = new Option(long_name, short_name);
+  options_[long_name] = option;
 
-  return *this;
+  return *option;
 }
 
 
@@ -33,33 +43,41 @@ bool Arguments::evaluate(int argc, char* argv[])
   errors_.clear();
 
   for (auto i = options_.begin(); i != options_.end(); ++i) { // configured options
-    auto option = i->second;
+    auto option = *i->second;
     bool found = false;
 
     for (auto j = args.begin(); j != args.end(); ++j) { // given arguments
       string arg_name  = *j;
-      string arg_value = *++j;
 
-      stringstream ss;
-      ss << "-" << option->shortName();
+      stringstream aux;
+      aux << "-" << option.shortName();
 
-      string opt_short = ss.str();
-      string opt_long  = "--" + option->longName();
+      string opt_short = aux.str();
+      string opt_long  = "--" + option.longName();
 
-      if (option->hasShortName() && (arg_name == opt_short || arg_name == opt_long)) {
-        option->value(arg_value); // update option value
-        last_index += 2;
+      if (option.hasShortName() && (arg_name == opt_short || arg_name == opt_long)) {
+        if (!option.isFlag()) {
+          option.value(*++j);
+          last_index += 2;
+        }
+        else {
+          ++last_index;
+        }
       }
-      else if (!option->hasShortName() && arg_name == opt_long) {
-        option->value(arg_value); // update option value
-        last_index += 2;
+      else if (!option.hasShortName() && arg_name == opt_long) {
+        if (!option.isFlag()) {
+          option.value(*++j);
+          last_index += 2;
+        }
+        else {
+          ++last_index;
+        }
       }
     }
 
-    if (!found && option->required()) {
+    if (!found && option.required()) {
       stringstream ss;
-
-      ss << "Option \"" << option->longName() << "\" is required!" << endl;
+      ss << "Option \"" << option.longName() << "\" is required!" << endl;
       errors_ = ss.str();
 
       is_valid = false;
@@ -106,12 +124,12 @@ string Arguments::getHelpMessage()
 }
 
 
-shared_ptr<Option> Arguments::get(const string& option_name)
+Option& Arguments::get(const string& option_name)
 {
   auto found = options_.find(option_name);
 
   if (found != options_.end()) {
-    return found->second; // move the ownership of smart pointer
+    return *found->second;
   }
 
   stringstream ss;

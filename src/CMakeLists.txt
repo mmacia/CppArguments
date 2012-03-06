@@ -7,5 +7,5 @@ set(CMAKE_CXX_FLAGS "-std=c++0x")
 file(GLOB SOURCES_CPP "${CMAKE_CURRENT_SOURCE_DIR}/ideup/*.cpp")
 file(GLOB INCLUDES_CPP "${CMAKE_CURRENT_SOURCE_DIR}/ideup/*.hpp")
 
-add_library(arguments SHARED ${SOURCES_CPP} ${SOURCES_CPP})
-add_library(arguments-static STATIC ${SOURCES_CPP} ${SOURCES_CPP})
+add_library(arguments SHARED ${SOURCES_CPP} ${INCLUDES_CPP})
+add_library(arguments-static STATIC ${SOURCES_CPP} ${INCLUDES_CPP})

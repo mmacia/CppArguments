@@ -7,15 +7,16 @@ int main(int argc, char* argv[])
 {
   Arguments args;
 
-  args.add((new Option("help", 'h'))->required(true).description("Shows this help message."))
-      .add((new Option("config", 'c'))->description("Path to config file"))
-      .add((new Option("output"))->description("Output directory").value("/tmp"));
+  args.add("help", 'h').required(true).description("Shows this help message.").flag(true);
+  args.add("config", 'c').description("Path to config file");
+  args.add("output").description("Output directory").value("/tmp");
+
 
   cout << args.getHelpMessage() << endl;
 
   try {
-    cout << "output value: " << args.get("output")->value() << endl;
-    cout << "output value: " << args.get("nonexists")->value() << endl;
+    cout << "output value: " << args.get("output").value() << endl;
+    cout << "output value: " << args.get("nonexists").value() << endl;
   }
   catch(string& e) {
     cerr << e << endl;
@@ -23,9 +24,9 @@ int main(int argc, char* argv[])
 
   if (!args.evaluate(argc, argv)) {
     cout << args.getErrorMessage() << endl;
-    exit(1);
+    return 1;
   }
-  cout << "output value: " << args.get("output")->value() << endl;
+  cout << "output value: " << args.get("output").value() << endl;
 
   return 0;
 }
