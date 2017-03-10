@@ -36,7 +36,7 @@ Option& Arguments::add(const string& long_name, const char short_name)
 bool Arguments::evaluate(int argc, char* argv[])
 {
   // parse program arguments
-	vector<string> args;
+  vector<string> args;
   // store default parameter
   if (argc>1 && argv[1][0] != '-'){
     default_parameter_ = argv[1];
