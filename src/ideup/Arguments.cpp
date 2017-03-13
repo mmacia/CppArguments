@@ -36,7 +36,14 @@ Option& Arguments::add(const string& long_name, const char short_name)
 bool Arguments::evaluate(int argc, char* argv[])
 {
   // parse program arguments
-  vector<string> args(argv + 1, argv + argc);
+  vector<string> args;
+  // store default parameter
+  if (argc>1 && argv[1][0] != '-'){
+    default_parameter_ = argv[1];
+    args = vector<string>(argv + 2, argv + argc);
+  } else {
+    args = vector<string>(argv + 1, argv + argc);
+  }
 
   bool is_valid = true;
   errors_.clear();
@@ -44,23 +51,45 @@ bool Arguments::evaluate(int argc, char* argv[])
   for (auto i = options_.begin(); i != options_.end(); ++i) { // configured options
     auto option = i->second;
     bool found = false;
+    bool arg_fail = false;
 
     for (auto j = args.begin(); j != args.end(); ++j) { // given arguments
-      string arg_name  = *j;
+      string arg_name = *j;
 
       stringstream aux;
       aux << "-" << option->shortName();
 
       string opt_short = aux.str();
-      string opt_long  = "--" + option->longName();
+      string opt_long = "--" + option->longName();
 
       if ((option->hasShortName() && arg_name == opt_short) || (arg_name == opt_long)) {
         if (!option->isFlag()) {
-          option->value(*++j);
+          if (j + 1 != args.end()) {
+            auto k = j + 1;
+            if ((*k).at(0) != '-') {
+              option->value(*k);
+            }
+            else {
+              arg_fail = true;
+            }
+          } else {
+            arg_fail = true;
+          }
+        }
+
+        if (arg_fail) {
+          stringstream ss;
+          ss << "Option \"" << option->longName() << "\" has no given argument!" << endl;
+          errors_ = ss.str();
+
+          is_valid = false;
+          return false;
         }
 
         found = true;
       }
+
+      option->found(found);
     }
 
     if (!found && option->required()) {
@@ -124,6 +153,11 @@ Option& Arguments::get(const string& option_name)
   ss << "Option " << option_name << " does not exists!";
 
   throw string(ss.str());
+}
+
+std::string Arguments::defaultParameter()
+{
+  return default_parameter_;
 }
 
 

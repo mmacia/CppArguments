@@ -27,6 +27,7 @@ class Option
     Option& description(const string& value) { description_ = value; return *this; };
     Option& value(const string& value) { value_ = value; return *this; };
     Option& flag(bool value) { flag_ = value; return *this; };
+  Option& found(bool value) { found_ = value; return *this; };
 
     string description() const { return description_; };
     string longName() const { return long_name_; };
@@ -35,6 +36,7 @@ class Option
     string value() const { return value_; };
     bool hasShortName() const { return short_name_ != '\0'; }
     bool isFlag() const { return flag_; };
+    bool isFound() const { return found_; }
 
   protected:
   private:
@@ -43,6 +45,7 @@ class Option
     bool   required_;
     string description_;
     string value_;
+  bool   found_;
     bool   flag_;
 };
 
@@ -58,10 +61,11 @@ class Arguments
     string getErrorMessage() { return errors_; };
     string getHelpMessage();
     Option& get(const string& option_name);
+    std::string defaultParameter();
 
-  protected:
   private:
     map<string, Option*> options_;
+    string default_parameter_;
     string errors_;
 };
 
